@@ -1,5 +1,3 @@
-include("deformationTools.jl")
-
 struct hyperElasticModel
     cauchyStress::Function
     spatialTangentTensor::Function
@@ -47,4 +45,4 @@ function saintVenantSpatialTangent(F_mandel::Array{T,1}, λ_μ::Tuple{Float64, F
 end
 
 ##### Definition of Saint Venant Hyper Elastic Model
-saintVenantModel::hyperElasticModel  = hyperElasticModel(saintVenantCauchyStress, saintVenantSpatialTangent)
+saintVenantModel  = hyperElasticModel(saintVenantCauchyStress, saintVenantSpatialTangent)

@@ -1,5 +1,3 @@
-using LinearAlgebra
-
 function getMandelIndex(i,j)
     return 3*(j-1)+i
 end

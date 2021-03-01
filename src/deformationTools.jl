@@ -1,5 +1,3 @@
-include("convertTools.jl")
-
 function δ(i::Int64,j::Int64)
     return i==j ? 1.0 : 0.0
 end

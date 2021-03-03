@@ -11,7 +11,7 @@ function saintVenantSecondPiolaStress(E_mandel::Array{T, 1}, λ::Float64, μ::Fl
             for K ∈ 1:3
                 IJ = getMandelIndex(I,J)
                 KK = getMandelIndex(K,K)
-                S += δ(I,J)*E_mandel[KK]+ μ*E_mandel[IJ]
+                S[IJ] += δ(I,J)*E_mandel[KK]+ μ*E_mandel[IJ]
             end
         end
     end

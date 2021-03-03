@@ -1,7 +1,9 @@
 module LargeDeformations
+using LinearAlgebra, ForwardDiff
 include("deformationTools.jl")
 include("convertTools.jl")
 include("hyperElasticModels.jl")
+
 
 #from convertTools.jl
 export getMandelIndex, convert2DTensorToMandel, convert4DTensorToMandel,

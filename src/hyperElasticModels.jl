@@ -41,7 +41,7 @@ function saintVenantSpatialTangent(F_mandel::Array{T,1}, λ_μ::Tuple{Float64, F
             end
         end
     end
-    return convertMaterialTangent2SpatialTangent(ℂ, F_mandel)
+    return convertMaterialTangent2SpatialTangent(ℂ, F_mandel) 
 end
 
 ##### Definition of Saint Venant Hyper Elastic Model

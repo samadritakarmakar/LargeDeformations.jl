@@ -164,9 +164,8 @@ function convertMaterialTangent2SpatialTangent(ℂ_tensor::Array{T1, 4}, F_tenso
     return 𝕔
 end
 
-function convertMaterialTangent2SpatialTangent(ℂ::Array{T1, 2}, F_tensor::Array{T2, 1}) where {T1, T2}
-    F_tensor = convert2DMandelToTensor(F_mandel)
-    J = getJacobianDeformationGradient(F_tensor)
+function convertMaterialTangent2SpatialTangent(ℂ::Array{T1, 2}, F_mandel::Array{T2, 1}) where {T1, T2}
+    J = getJacobianDeformationGradient(F_mandel)
     𝕔 = zeros(T1, 9, 9)
     for l ∈ 1:3
         for k ∈ 1:3
@@ -184,7 +183,7 @@ function convertMaterialTangent2SpatialTangent(ℂ::Array{T1, 2}, F_tensor::Arra
                                 for M ∈ 1:3
                                     iM = getMandelIndex(i,M)
                                     MN = getMandelIndex(M, N)
-                                    𝕔[ij, kl] += F[iM]*F[jN]*ℂ[MN, PQ]*F[kP]*F[lQ]/J
+                                    𝕔[ij, kl] += F_mandel[iM]*F_mandel[jN]*ℂ[MN, PQ]*F_mandel[kP]*F_mandel[lQ]/J
                                 end
                             end
                         end

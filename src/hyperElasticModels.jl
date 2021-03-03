@@ -25,7 +25,7 @@ function saintVenantCauchyStress(F_mandel::Array{T,1}, λ_μ::Tuple{Float64, Flo
     return convertSecondPiola2CauchyStress(S_mandel, F_mandel)
 end
 
-function saintVenantSpatialTangent(F_mandel::Array{T,1}, λ_μ::Tuple{Float64, Float64}) where T
+function saintVenantTangent(F_mandel::Array{T,1}, λ_μ::Tuple{Float64, Float64}) where T
     λ = λ_μ[1]
     μ = λ_μ[2]
     ℂ = zeros(T, 9, 9)
@@ -40,6 +40,11 @@ function saintVenantSpatialTangent(F_mandel::Array{T,1}, λ_μ::Tuple{Float64, F
             end
         end
     end
+    return ℂ
+end
+
+function saintVenantSpatialTangent(F_mandel::Array{T,1}, λ_μ::Tuple{Float64, Float64}) where T
+    ℂ = saintVenantTangent(F_mandel, λ_μ)
     return convertMaterialTangent2SpatialTangent(ℂ, F_mandel)
 end
 

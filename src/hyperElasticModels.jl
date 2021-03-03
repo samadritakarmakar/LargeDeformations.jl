@@ -6,13 +6,12 @@ end
 ####Saint Venant#############
 function saintVenantSecondPiolaStress(E_mandel::Array{T, 1}, λ::Float64, μ::Float64) where T
     S = zeros(T, 9)
+    E_tensor = convert2DMandelToTensor(E_mandel)
+    trace_E = LinearAlgebra.tr(E_tensor)
     for J ∈ 1:3
         for I ∈ 1:3
-            for K ∈ 1:3
-                IJ = getMandelIndex(I,J)
-                KK = getMandelIndex(K,K)
-                S[IJ] += δ(I,J)*E_mandel[KK]+ μ*E_mandel[IJ]
-            end
+            IJ = getMandelIndex(I,J)
+            S[IJ] += λ*δ(I,J)*trace_E + 2*μ*E_mandel[IJ]
         end
     end
     return S
@@ -41,7 +40,6 @@ function saintVenantSpatialTangent(F_mandel::Array{T,1}, λ_μ::Tuple{Float64, F
             end
         end
     end
-    println(ℂ)
     return convertMaterialTangent2SpatialTangent(ℂ, F_mandel)
 end
 

@@ -202,7 +202,7 @@ function convertSecondPiola2CauchyStress(S_tensor::Array{T1,2}, F_tensor::Array{
 end
 
 function convertSecondPiola2CauchyStress(S_mandel::Array{T1,1}, F_mandel::Array{T2,1}) where {T1, T2}
-    J = getJacobianDeformationGradient(F_mandel)
+    F_tensor = convert2DMandelToTensor(F_mandel)
     S_tensor = convert2DMandelToTensor(S_mandel)
     return convertSecondPiola2CauchyStress(S_tensor, F_tensor)
 end

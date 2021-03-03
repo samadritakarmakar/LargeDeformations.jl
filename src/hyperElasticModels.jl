@@ -22,7 +22,7 @@ function saintVenantCauchyStress(F_mandel::Array{T,1}, λ_μ::Tuple{Float64, Flo
     λ = λ_μ[1]
     μ = λ_μ[2]
     E_mandel = getGreenStrain(F_mandel)
-    S_mandel = saintVenantCauchyStress(E_mandel, λ, μ)
+    S_mandel = saintVenantSecondPiolaStress(E_mandel, (λ, μ))
     return convertSecondPiola2CauchyStress(S_mandel, F_mandel)
 end
 

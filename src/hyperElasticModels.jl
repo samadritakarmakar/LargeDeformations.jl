@@ -1,4 +1,6 @@
 struct hyperElasticModel
+    secondPiolaStress::Function
+    materialTangentTensor::Function
     cauchyStress::Function
     spatialTangentTensor::Function
 end
@@ -77,4 +79,6 @@ function saintVenantSpatialTangent(F::Array{T,N}, λ_μ::Tuple{Float64, Float64}
 end
 
 ##### Definition of Saint Venant Hyper Elastic Model
-saintVenantModel  = hyperElasticModel(saintVenantCauchyStress, saintVenantSpatialTangent)
+saintVenantModel  = hyperElasticModel(saintVenantSecondPiolaStress,
+    saintVenantTangent, saintVenantCauchyStress,
+    saintVenantSpatialTangent)

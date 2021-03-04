@@ -41,8 +41,7 @@ end
 function saintVenantCauchyStress(F::Array{T,N}, λ_μ::Tuple{Float64, Float64}) where {T, N}
     λ = λ_μ[1]
     μ = λ_μ[2]
-    E = getGreenStrain(F)
-    S = saintVenantSecondPiolaStress(E, λ, μ)
+    S = saintVenantSecondPiolaStress(F, λ, μ)
     return convertSecondPiola2CauchyStress(S, F)
 end
 

@@ -5,7 +5,7 @@ function saintVenantTest()
     ∂u_∂X[1] = 1e-4
     F = LargeDeformations.getDeformationGradient(∂u_∂X)
     J = LargeDeformations.getJacobianDeformationGradient(F)
-    LargeDeformations.convert2DMandelToTensor(F)
+    F_tensor = LargeDeformations.convert2DMandelToTensor(F)
     E::Float64 = 200e3 #MPa
     ν::Float64 = 0.3
     λ = (ν*E)/((1+ν)*(1-2*ν))
@@ -18,9 +18,10 @@ function saintVenantTest()
     println("σ = ", σ)
     F_tensor = LargeDeformations.convert2DMandelToTensor(F)
     ∂u_∂X_tensor = LargeDeformations.convert2DMandelToTensor(∂u_∂X)
-    ∂u_∂x = LargeDeformations.convert2DTensorToMandel(∂u_∂X_tensor*inv(F_tensor))
-    println("∂u_∂x = ", ∂u_∂x)
-    𝕔 = LargeDeformations.saintVenantModel.spatialTangentTensor(F, λ_μ)
-    println(𝕔)
-    𝕔*inv(F*F')*E
+    ℂ = LargeDeformations.saintVenantTangent(F, λ_μ)
+    S = LargeDeformations.convert2DMandelToTensor(ℂ*𝔼)
+    σ_check = LargeDeformations.convert2DTensorToMandel(1/J*F_tensor*S*F_tensor')
+    𝕔_mandel = LargeDeformations.saintVenantModel.spatialTangentTensor(F, λ_μ)
+    𝕔_tensor = LargeDeformations.saintVenantModel.spatialTangentTensor(F_tensor, λ_μ)
+    𝕔_mandel == LargeDeformations.convert4DTensorToMandel(𝕔_tensor)
 end

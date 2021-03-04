@@ -70,9 +70,9 @@ function getLeftCauchyDeformation(F_mandel::Array{T, 1}) where T
     return b
 end
 
-function getLagrangeStrain(F_tensor::Array{T, 2}) where T
+function getGreenStrain(F_tensor::Array{T, 2}) where T
     C = getRightCauchyDeformation(F_tensor)
-    E = zeros(T, 3, 3)
+    E = zeros(T, 3,3)
     for j ∈ 1:3
         for i ∈ 1:3
             E[i,j] += 0.5*(C[i,j]- δ(i,j))

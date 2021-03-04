@@ -31,6 +31,11 @@ function saintVenantSecondPiolaStress(E_mandel::Array{T, 1}, λ::Float64, μ::Fl
     return S
 end
 
+function saintVenantSecondPiolaStress(E::Array{T,N}, λ_μ::Tuple{Float64, Float64}) where {T, N}
+    return saintVenantSecondPiolaStress(E, λ_μ[1], λ_μ[2])
+end
+
+
 function saintVenantCauchyStress(F::Array{T,N}, λ_μ::Tuple{Float64, Float64}) where {T, N}
     λ = λ_μ[1]
     μ = λ_μ[2]

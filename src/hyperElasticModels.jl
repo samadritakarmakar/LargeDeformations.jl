@@ -7,7 +7,8 @@ end
 
 ####Saint Venant#############
 
-function saintVenantSecondPiolaStress(E_tensor::Array{T, 2}, λ::Float64, μ::Float64) where T
+function saintVenantSecondPiolaStress(F_tensor::Array{T, 2}, λ::Float64, μ::Float64) where T
+    E_tensor = getGreenStrain(F_tensor)
     S = zeros(T, 3, 3)
     trace_E = LinearAlgebra.tr(E_tensor)
     for J ∈ 1:3
@@ -18,8 +19,9 @@ function saintVenantSecondPiolaStress(E_tensor::Array{T, 2}, λ::Float64, μ::Fl
     return S
 end
 
-function saintVenantSecondPiolaStress(E_mandel::Array{T, 1}, λ::Float64, μ::Float64) where T
+function saintVenantSecondPiolaStress(F_mandel::Array{T, 1}, λ::Float64, μ::Float64) where T
     S = zeros(T, 9)
+    E_mandel = getGreenStrain(F_mandel)
     E_tensor = convert2DMandelToTensor(E_mandel)
     trace_E = LinearAlgebra.tr(E_tensor)
     for J ∈ 1:3
@@ -31,8 +33,8 @@ function saintVenantSecondPiolaStress(E_mandel::Array{T, 1}, λ::Float64, μ::Fl
     return S
 end
 
-function saintVenantSecondPiolaStress(E::Array{T,N}, λ_μ::Tuple{Float64, Float64}) where {T, N}
-    return saintVenantSecondPiolaStress(E, λ_μ[1], λ_μ[2])
+function saintVenantSecondPiolaStress(F::Array{T,N}, λ_μ::Tuple{Float64, Float64}) where {T, N}
+    return saintVenantSecondPiolaStress(F, λ_μ[1], λ_μ[2])
 end
 
 

@@ -1,11 +1,13 @@
 using LargeDeformations, LinearAlgebra
 
 function saintVenantTest()
-    ∂u_∂X = zeros(9)
-    ∂u_∂X[1] = 1e-4
+    #∂u_∂X = zeros(9)
+    #∂u_∂X[1] = 1e-4
+    ∂u_∂X = rand(9)*1e-3
     F = LargeDeformations.getDeformationGradient(∂u_∂X)
     J = LargeDeformations.getJacobianDeformationGradient(F)
     F_tensor = LargeDeformations.convert2DMandelToTensor(F)
+    println("∂u_∂X = ", ∂u_∂X)
     println("F_tensor = ", F_tensor)
     E::Float64 = 200e3 #MPa
     ν::Float64 = 0.3

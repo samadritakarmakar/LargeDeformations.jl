@@ -50,8 +50,8 @@ function saintVenantTangent(E_tensor::Array{T,2}, λ_μ::Tuple{Float64, Float64}
     λ = λ_μ[1]
     μ = λ_μ[2]
     ℂ = zeros(T, 3, 3, 3, 3)
-    for K ∈ 1:3
-        for L ∈ 1:3
+    for L ∈ 1:3
+        for K ∈ 1:3
             for J ∈ 1:3
                 for I ∈ 1:3
                     ℂ[I,J,K,L] += λ*δ(I, J)*δ(K, L) + μ*(δ(I,K)*δ(J,L)+δ(J,K)*δ(I,L))
@@ -66,8 +66,8 @@ function saintVenantTangent(E_mandel::Array{T,1}, λ_μ::Tuple{Float64, Float64}
     λ = λ_μ[1]
     μ = λ_μ[2]
     ℂ = zeros(T, 9, 9)
-    for K ∈ 1:3
-        for L ∈ 1:3
+    for L ∈ 1:3
+        for K ∈ 1:3
             KL = getMandelIndex(K, L)
             for J ∈ 1:3
                 for I ∈ 1:3

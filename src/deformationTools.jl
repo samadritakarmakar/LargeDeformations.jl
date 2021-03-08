@@ -141,9 +141,10 @@ function getPrincipalStretches(F_mandel::Array{T, 1}) where T
     return getPrincipalStretches(F_tensor)
 end
 
-function convertMaterialTangent2SpatialTangent(ℂ_tensor::Array{T1, 4}, F_tensor::Array{T2, 2}) where {T1, T2}
+function convertMaterialTangent2SpatialTangent!(𝕔::Array{T1,4}, ℂ_tensor::Array{T1, 4}, F_tensor::Array{T2, 2}) where {T1, T2}
     J = getJacobianDeformationGradient(F_tensor)
-    𝕔 = zeros(T1, 3,3,3,3)
+    #𝕔 = zeros(T1, 3,3,3,3)
+    fill!(𝕔, 0.0)
     for l ∈ 1:3
         for k ∈ 1:3
             for j ∈ 1:3
@@ -164,9 +165,10 @@ function convertMaterialTangent2SpatialTangent(ℂ_tensor::Array{T1, 4}, F_tenso
     return 𝕔
 end
 
-function convertMaterialTangent2SpatialTangent(ℂ::Array{T1, 2}, F_mandel::Array{T2, 1}) where {T1, T2}
+function convertMaterialTangent2SpatialTangent!(𝕔::Array{T1, 2}, ℂ::Array{T1, 2}, F_mandel::Array{T2, 1}) where {T1, T2}
     J = getJacobianDeformationGradient(F_mandel)
-    𝕔 = zeros(T1, 9, 9)
+    #𝕔 = zeros(T1, 9, 9)
+    fill!(𝕔, 0.0)
     for l ∈ 1:3
         for k ∈ 1:3
             kl = getMandelIndex(k,l)

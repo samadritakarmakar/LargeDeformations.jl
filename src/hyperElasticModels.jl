@@ -1,8 +1,8 @@
 struct hyperElasticModel
     secondPiolaStress::Function
-    materialTangentTensor::Function
+    materialTangentTensor!::Function
     cauchyStress::Function
-    spatialTangentTensor::Function
+    spatialTangentTensor!::Function
 end
 
 ####Saint Venant#############
@@ -51,10 +51,12 @@ function saintVenantCauchyStress(F::Array{T,N}, λ_μ::Tuple{Float64, Float64}) 
     return convertSecondPiola2CauchyStress(S, F)
 end
 
-function saintVenantTangent(E_tensor::Array{T,2}, λ_μ::Tuple{Float64, Float64}) where T
+function saintVenantTangent!(ℂ::Array{T, 4}, E_tensor::Array{T,2}, λ_μ::Tuple{Float64, Float64}) where T
+
     λ = λ_μ[1]
     μ = λ_μ[2]
-    ℂ = zeros(T, 3, 3, 3, 3)
+    #ℂ = zeros(T, 3, 3, 3, 3)
+    fill!(ℂ, 0.0)
     for L ∈ 1:3
         for K ∈ 1:3
             δ_KL = δ(K, L)
@@ -73,10 +75,10 @@ function saintVenantTangent(E_tensor::Array{T,2}, λ_μ::Tuple{Float64, Float64}
     return ℂ
 end
 
-function saintVenantTangent(E_mandel::Array{T,1}, λ_μ::Tuple{Float64, Float64}) where T
+function saintVenantTangent!(ℂ::Array{T, 2}, E_mandel::Array{T,1}, λ_μ::Tuple{Float64, Float64}) where T
     λ = λ_μ[1]
     μ = λ_μ[2]
-    ℂ = zeros(T, 9, 9)
+    fill!(ℂ, 0.0)
     for L ∈ 1:3
         for K ∈ 1:3
             KL = getMandelIndex(K, L)
@@ -97,13 +99,22 @@ function saintVenantTangent(E_mandel::Array{T,1}, λ_μ::Tuple{Float64, Float64}
     return ℂ
 end
 
-function saintVenantSpatialTangent(F::Array{T,N}, λ_μ::Tuple{Float64, Float64}) where {T, N}
+function saintVenantSpatialTangent!(𝕔::Array{T,4}, F::Array{T,2}, λ_μ::Tuple{Float64, Float64}) where {T, N}
     E = getGreenStrain(F)
-    ℂ = saintVenantTangent(E, λ_μ)
-    return convertMaterialTangent2SpatialTangent(ℂ, F)
+    ℂ = zeros(T, 3,3,3,3)
+    fill!(𝕔, 0.0)
+    saintVenantTangent!(ℂ, E, λ_μ)
+    return convertMaterialTangent2SpatialTangent!(𝕔, ℂ, F)
 end
 
+function saintVenantSpatialTangent!(𝕔::Array{T,2}, F::Array{T,1}, λ_μ::Tuple{Float64, Float64}) where {T, N}
+    E = getGreenStrain(F)
+    ℂ = zeros(T, 9,9)
+    fill!(𝕔, 0.0)
+    saintVenantTangent!(ℂ, E, λ_μ)
+    return convertMaterialTangent2SpatialTangent!(𝕔, ℂ, F)
+end
 ##### Definition of Saint Venant Hyper Elastic Model
 saintVenantModel  = hyperElasticModel(saintVenantSecondPiolaStress,
-    saintVenantTangent, saintVenantCauchyStress,
-    saintVenantSpatialTangent)
+    saintVenantTangent!, saintVenantCauchyStress,
+    saintVenantSpatialTangent!)

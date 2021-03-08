@@ -14,9 +14,9 @@ export getDeformationGradient, getJacobianDeformationGradient,
     getRightCauchyDeformation, getLeftCauchyDeformation,
     getLagrangeStrain, getGreenStrain, convertGreen2AlmansiStrain,
     getAlmansiStrain, getInvariants, getPrincipalStretches,
-    convertMaterialTangent2SpatialTangent, convertSecondPiola2CauchyStress
+    convertMaterialTangent2SpatialTangent!, convertSecondPiola2CauchyStress
 
 #from hyperElasticModels.jl
-export hyperElasticModel, saintVenantCauchyStress, saintVenantTangent,
-    saintVenantSpatialTangent
+export hyperElasticModel, saintVenantCauchyStress, saintVenantTangent!,
+    saintVenantSpatialTangent!
 end # module

@@ -52,7 +52,7 @@ function getRightCauchyDeformation(F_mandel::Array{T, 1}) where T
 end
 
 function getLeftCauchyDeformation(F_tensor::Array{T, 2}) where T
-    return F*F'
+    return F_tensor*F_tensor'
 end
 
 function getLeftCauchyDeformation(F_mandel::Array{T, 1}) where T

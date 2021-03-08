@@ -7,8 +7,8 @@ end
 
 ####Saint Venant#############
 
-function saintVenantSecondPiolaStress(F_tensor::Array{T, 2}, λ::Float64, μ::Float64) where T
-    E_tensor = getGreenStrain(F_tensor)
+function saintVenantSecondPiolaStress(E_tensor::Array{T, 2}, λ::Float64, μ::Float64) where T
+    #E_tensor = getGreenStrain(F_tensor)
     S = zeros(T, 3, 3)
     trace_E = LinearAlgebra.tr(E_tensor)
     for J ∈ 1:3
@@ -19,9 +19,9 @@ function saintVenantSecondPiolaStress(F_tensor::Array{T, 2}, λ::Float64, μ::Fl
     return S
 end
 
-function saintVenantSecondPiolaStress(F_mandel::Array{T, 1}, λ::Float64, μ::Float64) where T
+function saintVenantSecondPiolaStress(E_mandel::Array{T, 1}, λ::Float64, μ::Float64) where T
     S = zeros(T, 9)
-    E_mandel = getGreenStrain(F_mandel)
+    #E_mandel = getGreenStrain(F_mandel)
     E_tensor = convert2DMandelToTensor(E_mandel)
     trace_E = LinearAlgebra.tr(E_tensor)
     for J ∈ 1:3
@@ -33,19 +33,20 @@ function saintVenantSecondPiolaStress(F_mandel::Array{T, 1}, λ::Float64, μ::Fl
     return S
 end
 
-function saintVenantSecondPiolaStress(F::Array{T,N}, λ_μ::Tuple{Float64, Float64}) where {T, N}
-    return saintVenantSecondPiolaStress(F, λ_μ[1], λ_μ[2])
+function saintVenantSecondPiolaStress(E::Array{T,N}, λ_μ::Tuple{Float64, Float64}) where {T, N}
+    return saintVenantSecondPiolaStress(E, λ_μ[1], λ_μ[2])
 end
 
 
 function saintVenantCauchyStress(F::Array{T,N}, λ_μ::Tuple{Float64, Float64}) where {T, N}
     λ = λ_μ[1]
     μ = λ_μ[2]
-    S = saintVenantSecondPiolaStress(F, λ, μ)
+    E = getGreenStrain(F)
+    S = saintVenantSecondPiolaStress(E, λ, μ)
     return convertSecondPiola2CauchyStress(S, F)
 end
 
-function saintVenantTangent(F_tensor::Array{T,2}, λ_μ::Tuple{Float64, Float64}) where T
+function saintVenantTangent(E_tensor::Array{T,2}, λ_μ::Tuple{Float64, Float64}) where T
     λ = λ_μ[1]
     μ = λ_μ[2]
     ℂ = zeros(T, 3, 3, 3, 3)
@@ -61,7 +62,7 @@ function saintVenantTangent(F_tensor::Array{T,2}, λ_μ::Tuple{Float64, Float64}
     return ℂ
 end
 
-function saintVenantTangent(F_mandel::Array{T,1}, λ_μ::Tuple{Float64, Float64}) where T
+function saintVenantTangent(E_mandel::Array{T,1}, λ_μ::Tuple{Float64, Float64}) where T
     λ = λ_μ[1]
     μ = λ_μ[2]
     ℂ = zeros(T, 9, 9)
@@ -80,7 +81,8 @@ function saintVenantTangent(F_mandel::Array{T,1}, λ_μ::Tuple{Float64, Float64}
 end
 
 function saintVenantSpatialTangent(F::Array{T,N}, λ_μ::Tuple{Float64, Float64}) where {T, N}
-    ℂ = saintVenantTangent(F, λ_μ)
+    E = getGreenStrain(F)
+    ℂ = saintVenantTangent(E, λ_μ)
     return convertMaterialTangent2SpatialTangent(ℂ, F)
 end
 

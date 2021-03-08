@@ -22,8 +22,13 @@ end
 function saintVenantSecondPiolaStress(E_mandel::Array{T, 1}, λ::Float64, μ::Float64) where T
     S = zeros(T, 9)
     #E_mandel = getGreenStrain(F_mandel)
-    E_tensor = convert2DMandelToTensor(E_mandel)
-    trace_E = LinearAlgebra.tr(E_tensor)
+    #E_tensor = convert2DMandelToTensor(E_mandel)
+
+    trace_E = 0.0
+    for K ∈ 1:3
+        KK = getMandelIndex(K,K)
+        trace_E += E_mandel[KK]
+    end
     for J ∈ 1:3
         for I ∈ 1:3
             IJ = getMandelIndex(I,J)
@@ -52,9 +57,15 @@ function saintVenantTangent(E_tensor::Array{T,2}, λ_μ::Tuple{Float64, Float64}
     ℂ = zeros(T, 3, 3, 3, 3)
     for L ∈ 1:3
         for K ∈ 1:3
+            δ_KL = δ(K, L)
             for J ∈ 1:3
+                δ_JL = δ(J,L)
+                δ_JK = δ(J,K)
                 for I ∈ 1:3
-                    ℂ[I,J,K,L] += λ*δ(I, J)*δ(K, L) + μ*(δ(I,K)*δ(J,L)+δ(J,K)*δ(I,L))
+                    δ_IJ = δ(I, J)
+                    δ_IK = δ(I, K)
+                    δ_IL = δ(I, L)
+                    ℂ[I,J,K,L] += λ*δ_IJ*δ_KL + μ*(δ_IK*δ_JL+δ_JK*δ_IL)
                 end
             end
         end
@@ -69,10 +80,16 @@ function saintVenantTangent(E_mandel::Array{T,1}, λ_μ::Tuple{Float64, Float64}
     for L ∈ 1:3
         for K ∈ 1:3
             KL = getMandelIndex(K, L)
+            δ_KL = δ(K, L)
             for J ∈ 1:3
+                δ_JL = δ(J,L)
+                δ_JK = δ(J,K)
                 for I ∈ 1:3
                     IJ = getMandelIndex(I, J)
-                    ℂ[IJ, KL] += λ*δ(I, J)*δ(K, L) + μ*(δ(I,K)*δ(J,L)+δ(J,K)*δ(I,L))
+                    δ_IJ = δ(I, J)
+                    δ_IK = δ(I, K)
+                    δ_IL = δ(I, L)
+                    ℂ[IJ, KL] += λ*δ_IJ*δ_KL + μ*(δ_IK*δ_JL+δ_JK*δ_IL)
                 end
             end
         end

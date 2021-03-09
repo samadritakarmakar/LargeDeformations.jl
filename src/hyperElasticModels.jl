@@ -64,10 +64,10 @@ function saintVenantTangent!(ℂ::Array{T, 4}, E_tensor::Array{T,2}, λ_μ::Tupl
                 δ_JL = δ(J,L)
                 δ_JK = δ(J,K)
                 for I ∈ 1:3
-                    δ_IJ = δ(I, J)
-                    δ_IK = δ(I, K)
-                    δ_IL = δ(I, L)
-                    ℂ[I,J,K,L] += λ*δ_IJ*δ_KL + μ*(δ_IK*δ_JL+δ_JK*δ_IL)
+                    #δ_IJ = δ(I, J)
+                    #δ_IK = δ(I, K)
+                    #δ_IL = δ(I, L)
+                    ℂ[I,J,K,L] += λ*δ(I, J)*δ_KL + μ*(δ(I, K)*δ_JL+δ_JK*δ(I, L))
                 end
             end
         end
@@ -88,10 +88,10 @@ function saintVenantTangent!(ℂ::Array{T, 2}, E_mandel::Array{T,1}, λ_μ::Tupl
                 δ_JK = δ(J,K)
                 for I ∈ 1:3
                     IJ = getMandelIndex(I, J)
-                    δ_IJ = δ(I, J)
-                    δ_IK = δ(I, K)
-                    δ_IL = δ(I, L)
-                    ℂ[IJ, KL] += λ*δ_IJ*δ_KL + μ*(δ_IK*δ_JL+δ_JK*δ_IL)
+                    #δ_IJ = δ(I, J)
+                    #δ_IK = δ(I, K)
+                    #δ_IL = δ(I, L)
+                    ℂ[IJ, KL] += λ*δ(I, J)*δ_KL + μ*(δ(I, K)*δ_JL+δ_JK*δ(I, L))
                 end
             end
         end

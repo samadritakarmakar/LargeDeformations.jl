@@ -2,24 +2,36 @@ function δ(i::Int64,j::Int64)
     return i==j ? 1.0 : 0.0
 end
 
-function getDeformationGradient(∂u_∂X_tensor::Array{T, 2}) where T
-    F = zeros(T, 3,3)
+function getDeformationGradient!(F::Array{T, 2}, ∂u_∂X_tensor::Array{T, 2}) where T
+    zero = zeros(T, 1)
+    fill!(F, zero[1])
     for J ∈ 1:3
         for i ∈ 1:3
             F[i,J] += δ(i,J) + ∂u_∂X_tensor[i,J]
         end
     end
+end
+
+function getDeformationGradient(∂u_∂X_tensor::Array{T, 2}) where T
+    F = zeros(T, 3,3)
+    getDeformationGradient!(F, ∂u_∂X_tensor)
     return F
 end
 
-function getDeformationGradient(∂u_∂X_mandel::Array{T, 1}) where T
-    F = zeros(T, 9)
+function getDeformationGradient!(F::Array{T, 1}, ∂u_∂X_mandel::Array{T, 1}) where T
+    zero = zeros(T, 1)
+    fill!(F, zero[1])
     for J ∈ 1:3
         for i ∈ 1:3
             iJ = getMandelIndex(i,J)
             F[iJ] += δ(i,J) + ∂u_∂X_mandel[iJ]
         end
     end
+end
+
+function getDeformationGradient(∂u_∂X_mandel::Array{T, 1}) where T
+    F = zeros(T, 9)
+    getDeformationGradient!(F, ∂u_∂X_mandel)
     return F
 end
 
@@ -32,12 +44,19 @@ function getJacobianDeformationGradient(F_mandel::Array{T, 1}) where T
     return getJacobianDeformationGradient(F_tensor)
 end
 
+function getRightCauchyDeformation!(E::Array{T, 2}, F_tensor::Array{T, 2}) where T
+    zero = zeros(T, 1)
+    fill!(E, zero[1])
+    E .= F_tensor'*F_tensor
+end
+
 function getRightCauchyDeformation(F_tensor::Array{T, 2}) where T
     return F_tensor'*F_tensor
 end
 
-function getRightCauchyDeformation(F_mandel::Array{T, 1}) where T
-    C = zeros(T, 9)
+function getRightCauchyDeformation!(C::Array{T, 1}, F_mandel::Array{T, 1}) where T
+    zero = zeros(T, 1)
+    fill!(C, zero[1])
     for J ∈ 1:3
         for I ∈ 1:3
             IJ = getMandelIndex(I,J)
@@ -48,31 +67,53 @@ function getRightCauchyDeformation(F_mandel::Array{T, 1}) where T
             end
         end
     end
+end
+
+function getRightCauchyDeformation(F_mandel::Array{T, 1}) where T
+    C = zeros(T, 9)
+    getRightCauchyDeformation!(C, F_mandel)
     return C
 end
 
-function getLeftCauchyDeformation(F_tensor::Array{T, 2}) where T
-    return F_tensor*F_tensor'
+function getLeftCauchyDeformation!(c::Array{T,2}, F_tensor::Array{T, 2}) where T
+    zero = zeros(T, 1)
+    fill!(c, zero[1])
+    Finv = inv(F_tensor)
+        c .= Finv'*Finv
 end
 
-function getLeftCauchyDeformation(F_mandel::Array{T, 1}) where T
-    b = zeros(T, 9)
+function getLeftCauchyDeformation(F_tensor::Array{T, 2}) where T
+    Finv = inv(F_tensor)
+    return Finv'*Finv
+end
+
+function getLeftCauchyDeformation!(c::Array{T, 1}, F_mandel::Array{T, 1}) where T
+    zero = zeros(T, 1)
+    fill!(c, zero[1])
+    F_tensor = convert2DMandelToTensor(F_mandel)
+    Finv = inv(F_tensor)
     for j ∈ 1:3
         for i ∈ 1:3
             ij = getMandelIndex(i,j)
             for I ∈ 1:3
-                iI = getMandelIndex(i,I)
-                jI = getMandelIndex(j,I)
-                b[ij] += F_madel[iI]*F_madel[jI]
+                Ii = getMandelIndex(I, i)
+                Ij = getMandelIndex(I, j)
+                c[ij] += Finv[I, i]*Finv[I, j]
             end
         end
     end
-    return b
 end
 
-function getGreenStrain(F_tensor::Array{T, 2}) where T
+function getLeftCauchyDeformation(F_mandel::Array{T, 1}) where T
+    c = zeros(T, 9)
+    getLeftCauchyDeformation!(c, F_mandel)
+    return c
+end
+
+function getGreenStrain!(E::Array{T, 2}, F_tensor::Array{T, 2}) where T
     C = getRightCauchyDeformation(F_tensor)
-    E = zeros(T, 3,3)
+    zero = zeros(T, 1)
+    fill!(E, zero[1])
     for j ∈ 1:3
         for i ∈ 1:3
             E[i,j] += 0.5*(C[i,j]- δ(i,j))
@@ -81,16 +122,36 @@ function getGreenStrain(F_tensor::Array{T, 2}) where T
     return E
 end
 
-function getGreenStrain(F_mandel::Array{T, 1}) where T
+function getGreenStrain(F_tensor::Array{T, 2}) where T
+    E = zeros(T, 3,3)
+    getGreenStrain!(E, F_tensor)
+    return E
+end
+
+function getGreenStrain!(E::Array{T, 1}, F_mandel::Array{T, 1}) where T
     C = getRightCauchyDeformation(F_mandel)
-    E = zeros(T, 9)
+    zero = zeros(T, 1)
+    fill!(E, zero[1])
     for j ∈ 1:3
         for i ∈ 1:3
             ij = getMandelIndex(i,j)
             E[ij] += 0.5*(C[ij]- δ(i,j))
         end
     end
+end
+
+function getGreenStrain(F_mandel::Array{T, 1}) where T
+    C = getRightCauchyDeformation(F_mandel)
+    E = zeros(T, 9)
+    getGreenStrain!(E, F_mandel)
     return E
+end
+
+function convertGreen2AlmansiStrain(σ::Array{T, 2}, E_tensor::Array{T, 2}, F_tensor::Array{T, 2}) where T
+    zero = zeros(T, 1)
+    fill!(σ, zero[1])
+    Finv = inv(F_tensor)
+    σ .= Finv'*E_tensor*Finv
 end
 
 function convertGreen2AlmansiStrain(E_tensor::Array{T, 2}, F_tensor::Array{T, 2}) where T
@@ -99,11 +160,34 @@ function convertGreen2AlmansiStrain(E_tensor::Array{T, 2}, F_tensor::Array{T, 2}
     return Finv'*E_tensor*Finv
 end
 
-function convertGreen2AlmansiStrain(E_mandel::Array{T, 1}, F_mandel::Array{T, 1}) where T
+function convertGreen2AlmansiStrain!(σ::Array{T, 1}, E_mandel::Array{T, 1}, F_mandel::Array{T, 1}) where T
     E_tensor = convert2DMandelToTensor(E_mandel)
     F_tensor = convert2DMandelToTensor(F_mandel)
-    e_tensor = convertGreen2AlmansiStrain(E_tensor, F_tensor)
-    return convert2DTensorToMandel(e_tensor)
+    Finv = inv(F_tensor)
+    zero = zeros(T, 1)
+    fill!(σ, zero[1])
+    for j ∈ 1:3
+        for i ∈ 1:3
+            for J ∈ 1:3
+                for I ∈ 1:3
+                    IJ = getMandelIndex(I, J)
+                    σ[ij] += Finv[i,I]*E[IJ]*Finv[j,J]
+                end
+            end
+        end
+    end
+end
+
+function getAlmansiStrain!(e::Array{T, 2}, F_tensor::Array{T, 2}) where T
+    #e = F⁻ᵀ.E.F⁻¹
+    c = getLeftCauchyDeformation(F_tensor)
+    zero = zeros(T, 1)
+    fill!(e, zero[1])
+    for i ∈ 1:3
+        for j ∈ 1:3
+            e[i,j] += 0.5*(δ(i,j)-c[i,j])
+        end
+    end
 end
 
 function getAlmansiStrain(F_tensor::Array{T, 2}) where T
@@ -185,7 +269,7 @@ function convertMaterialTangent2SpatialTangent!(𝕔::Array{T1, 2}, ℂ::Array{T
                                 for M ∈ 1:3
                                     iM = getMandelIndex(i,M)
                                     MN = getMandelIndex(M, N)
-                                    𝕔[ij, kl] += F_mandel[iM]*F_mandel[jN]*ℂ[MN, PQ]*F_mandel[kP]*F_mandel[lQ]/J
+                                    𝕔[ij, kl] += F_mandel[iM]*F_mandel[jN]*ℂ[MN, PQ]*F_mandel[kP]*F_mandel[lQ]
                                 end
                             end
                         end
@@ -194,7 +278,13 @@ function convertMaterialTangent2SpatialTangent!(𝕔::Array{T1, 2}, ℂ::Array{T
             end
         end
     end
+    𝕔 .= 𝕔/J
     return 𝕔
+end
+
+function convertSecondPiola2CauchyStress!(σ::Array{T1,2}, S_tensor::Array{T1,2}, F_tensor::Array{T2,2}) where {T1, T2}
+    J = getJacobianDeformationGradient(F_tensor)
+    σ .= 1/J*(F_tensor*S_tensor*F_tensor')
 end
 
 function convertSecondPiola2CauchyStress(S_tensor::Array{T1,2}, F_tensor::Array{T2,2}) where {T1, T2}
@@ -202,9 +292,28 @@ function convertSecondPiola2CauchyStress(S_tensor::Array{T1,2}, F_tensor::Array{
     return 1/J*(F_tensor*S_tensor*F_tensor')
 end
 
-function convertSecondPiola2CauchyStress(S_mandel::Array{T1,1}, F_mandel::Array{T2,1}) where {T1, T2}
-    F_tensor = convert2DMandelToTensor(F_mandel)
-    S_tensor = convert2DMandelToTensor(S_mandel)
-    σ_tensor = convertSecondPiola2CauchyStress(S_tensor, F_tensor)
-    return convert2DTensorToMandel(σ_tensor)
+function convertSecondPiola2CauchyStress!(σ::Array{T1,1}, S_mandel::Array{T1,1}, F_mandel::Array{T2,1}) where {T1, T2}
+    J = getJacobianDeformationGradient(F_mandel)
+    zero = zeros(T1, 1)
+    fill!(σ, zero[1])
+    for j ∈ 1:3
+        for i ∈ 1:3
+            ij = getMandelIndex(i, j)
+            for J ∈ 1:3
+                jJ = getMandelIndex(j, J)
+                for I ∈ 1:3
+                    iI = getMandelIndex(i, I)
+                    IJ = getMandelIndex(I, J)
+                    σ[ij] += F_mandel[iI]*S_mandel[IJ]*F_mandel[jJ]
+                end
+            end
+        end
+        σ .= σ/J
+    end
+end
+
+function convertSecondPiola2CauchyStress!(S_mandel::Array{T1,1}, F_mandel::Array{T2,1}) where {T1, T2}
+    σ = zeros(T, 9)
+    convertSecondPiola2CauchyStress!(σ, S_mandel, F_mandel)
+    return σ
 end

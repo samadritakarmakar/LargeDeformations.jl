@@ -1,29 +1,26 @@
 struct hyperElasticModel
-    secondPiolaStress::Function
+    secondPiolaStress!::Function
     materialTangentTensor!::Function
-    cauchyStress::Function
+    cauchyStress!::Function
     spatialTangentTensor!::Function
 end
 
 ####Saint Venant#############
 
-function saintVenantSecondPiolaStress(E_tensor::Array{T, 2}, λ::Float64, μ::Float64) where T
-    #E_tensor = getGreenStrain(F_tensor)
-    S = zeros(T, 3, 3)
+function saintVenantSecondPiolaStress!(S::Array{T, 2}, E_tensor::Array{T, 2}, λ::Float64, μ::Float64) where T
+    zero = zeros(T, 1)
+    fill!(S, zero[1])
     trace_E = LinearAlgebra.tr(E_tensor)
     for J ∈ 1:3
         for I ∈ 1:3
             S[I,J] += λ*δ(I,J)*trace_E + 2*μ*E_tensor[I,J]
         end
     end
-    return S
 end
 
-function saintVenantSecondPiolaStress(E_mandel::Array{T, 1}, λ::Float64, μ::Float64) where T
-    S = zeros(T, 9)
-    #E_mandel = getGreenStrain(F_mandel)
-    #E_tensor = convert2DMandelToTensor(E_mandel)
-
+function saintVenantSecondPiolaStress!(S::Array{T, 1}, E_mandel::Array{T, 1}, λ::Float64, μ::Float64) where T
+    zero = zeros(T, 1)
+    fill!(S, zero[1])
     trace_E = 0.0
     for K ∈ 1:3
         KK = getMandelIndex(K,K)
@@ -35,24 +32,47 @@ function saintVenantSecondPiolaStress(E_mandel::Array{T, 1}, λ::Float64, μ::Fl
             S[IJ] += λ*δ(I,J)*trace_E + 2*μ*E_mandel[IJ]
         end
     end
-    return S
 end
 
-function saintVenantSecondPiolaStress(E::Array{T,N}, λ_μ::Tuple{Float64, Float64}) where {T, N}
-    return saintVenantSecondPiolaStress(E, λ_μ[1], λ_μ[2])
+function saintVenantSecondPiolaStress!(S::Array{T, N}, E::Array{T,N}, λ_μ::Tuple{Float64, Float64}) where {T, N}
+    return saintVenantSecondPiolaStress!(S, E, λ_μ[1], λ_μ[2])
 end
 
-
-function saintVenantCauchyStress(F::Array{T,N}, λ_μ::Tuple{Float64, Float64}) where {T, N}
+function saintVenantCauchyStress!(σ::Array{T, 2}, F::Array{T, 2}, λ_μ::Tuple{Float64, Float64}) where T
     λ = λ_μ[1]
     μ = λ_μ[2]
+    zero = zeros(T, 1)
+    fill!(σ, zero[1])
     E = getGreenStrain(F)
-    S = saintVenantSecondPiolaStress(E, λ, μ)
-    return convertSecondPiola2CauchyStress(S, F)
+    S = zeros(T, 3,3)
+    saintVenantSecondPiolaStress!(S, E, λ, μ)
+    convertSecondPiola2CauchyStress!(σ, S, F)
 end
 
-function saintVenantTangent!(ℂ::Array{T, 4}, E_tensor::Array{T,2}, λ_μ::Tuple{Float64, Float64}) where T
+function saintVenantCauchyStress!(σ::Array{T, N}, F::Array{T, N}, λ_μ::Tuple{Float64, Float64}) where {T, N}
+    λ = λ_μ[1]
+    μ = λ_μ[2]
+    zero = zeros(T, 1)
+    fill!(σ, zero[1])
+    E = getGreenStrain(F)
+    S = zeros(T, 9)
+     saintVenantSecondPiolaStress!(S, E, λ, μ)
+    convertSecondPiola2CauchyStress!(σ, S, F)
+end
+#=
+function saintVenantCauchyStress(F::Array{T,1}, λ_μ::Tuple{Float64, Float64}) where T
+    σ = zeros(T, 9)
+    saintVenantCauchyStress!(σ, F, λ_μ)
+    return σ
+end
 
+function saintVenantCauchyStress(F::Array{T,2}, λ_μ::Tuple{Float64, Float64}) where T
+    σ = zeros(T, 3, 3)
+    saintVenantCauchyStress!(σ, F, λ_μ)
+    return σ
+end
+=#
+function saintVenantTangent!(ℂ::Array{T, 4}, E_tensor::Array{T,2}, λ_μ::Tuple{Float64, Float64}) where T
     λ = λ_μ[1]
     μ = λ_μ[2]
     #ℂ = zeros(T, 3, 3, 3, 3)
@@ -115,6 +135,6 @@ function saintVenantSpatialTangent!(𝕔::Array{T,2}, F::Array{T,1}, λ_μ::Tupl
     return convertMaterialTangent2SpatialTangent!(𝕔, ℂ, F)
 end
 ##### Definition of Saint Venant Hyper Elastic Model
-saintVenantModel  = hyperElasticModel(saintVenantSecondPiolaStress,
-    saintVenantTangent!, saintVenantCauchyStress,
+const saintVenantModel  = hyperElasticModel(saintVenantSecondPiolaStress!,
+    saintVenantTangent!, saintVenantCauchyStress!,
     saintVenantSpatialTangent!)

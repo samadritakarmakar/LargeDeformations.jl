@@ -151,7 +151,7 @@ function neoHookeanCompressible_Ψ(E_mandel::Array{T,1}, λ_μ::Tuple{Float64, F
     for J ∈ 1:3
         for I ∈ 1:3
             IJ = getMandelIndex(I,J)
-            C[IJ] += 2.0*(E[IJ] + δ(I,J))
+            C[IJ] += 2.0*E[IJ] + δ(I,J)
         end
     end
     C_tensor = convert2DMandelToTensor(C)

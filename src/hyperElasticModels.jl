@@ -170,7 +170,7 @@ end
 function neoHookeanCompressibleTangent!(ℂ::Array{T, 2}, E_mandel::Array{T,1}, λ_μ::Tuple{Float64, Float64}) where T
     fill!(ℂ, zeros(T, 1)[1])
     ψ(e) = neoHookeanCompressible_Ψ(e, λ_μ)
-    ForwardDiff.hessian!!(ℂ, ψ, E)
+    ForwardDiff.hessian!(ℂ, ψ, E)
     return ℂ
 end
 

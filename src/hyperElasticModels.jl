@@ -49,14 +49,14 @@ function saintVenantCauchyStress!(σ::Array{T, 2}, F::Array{T, 2}, λ_μ::Tuple{
     convertSecondPiola2CauchyStress!(σ, S, F)
 end
 
-function saintVenantCauchyStress!(σ::Array{T, N}, F::Array{T, N}, λ_μ::Tuple{Float64, Float64}) where {T, N}
+function saintVenantCauchyStress!(σ::Array{T, 1}, F::Array{T, 1}, λ_μ::Tuple{Float64, Float64}) where {T, N}
     λ = λ_μ[1]
     μ = λ_μ[2]
     zero = zeros(T, 1)
     fill!(σ, zero[1])
     E = getGreenStrain(F)
     S = zeros(T, 9)
-     saintVenantSecondPiolaStress!(S, E, λ, μ)
+    saintVenantSecondPiolaStress!(S, E, λ, μ)
     convertSecondPiola2CauchyStress!(σ, S, F)
 end
 #=
@@ -138,3 +138,62 @@ end
 const saintVenantModel  = hyperElasticModel(saintVenantSecondPiolaStress!,
     saintVenantTangent!, saintVenantCauchyStress!,
     saintVenantSpatialTangent!)
+
+################# End of Saint Venant############################################
+
+################### Compressible Neo-Hookean##########################
+
+function neoHookeanCompressible_Ψ(E_mandel::Array{T,1}, λ_μ::Tuple{Float64, Float64}) where T
+    E = E_mandel
+    λ = λ_μ[1]
+    μ = λ_μ[2]
+    C = zeros(T, 9)
+    for J ∈ 1:3
+        for I ∈ 1:3
+            IJ = getMandelIndex(I,J)
+            C[IJ] += 2.0*(E[IJ] + δ(I,J))
+        end
+    end
+    C_tensor = convert2DMandelToTensor(C)
+    Ic = tr(C_tensor)
+    J = sqrt(det(C_tensor))
+    return μ / 2 * (Ic - 3) - μ * log(J) + λ / 2 * log(J)^2
+end
+
+function neoHookeanCompressibleSecondPiolaStress!(S::Array{T, 1}, E::Array{T,1}, λ_μ::Tuple{Float64, Float64}) where T
+    fill!(S, zeros(T, 1)[1])
+    ψ(e) = neoHookeanCompressible_Ψ(e, λ_μ)
+    ForwardDiff.gradient!(S, ψ, E)
+    return S
+end
+
+function neoHookeanCompressibleTangent!(ℂ::Array{T, 2}, E_mandel::Array{T,1}, λ_μ::Tuple{Float64, Float64}) where T
+    fill!(ℂ, zeros(T, 1)[1])
+    ψ(e) = neoHookeanCompressible_Ψ(e, λ_μ)
+    ForwardDiff.hessian!!(ℂ, ψ, E)
+    return ℂ
+end
+
+function neoHookeanCompressibleCauchyStress!(σ::Array{T, 1}, F::Array{T, 1}, λ_μ::Tuple{Float64, Float64}) where T
+    zero = zeros(T, 1)
+    fill!(σ, zero[1])
+    E = getGreenStrain(F)
+    S = zeros(T, 9)
+    neoHookeanCompressibleSecondPiolaStress!(S, E, λ_μ)
+    convertSecondPiola2CauchyStress!(σ, S, F)
+    return σ
+end
+
+function neoHookeanCompressibleSpatialTangent!(𝕔::Array{T,2}, F::Array{T,1}, λ_μ::Tuple{Float64, Float64}) where T
+    E = getGreenStrain(F)
+    ℂ = zeros(T, 9,9)
+    fill!(𝕔, 0.0)
+    neoHookeanCompressibleTangent!(ℂ, E, λ_μ)
+    return convertMaterialTangent2SpatialTangent!(𝕔, ℂ, F)
+    return 𝕔
+end
+
+##### Definition of Neo Hookean Compressible Hyper Elastic Model##############################
+const neoHookeanCompressibleModel  = hyperElasticModel(neoHookeanCompressibleSecondPiolaStress!,
+    neoHookeanCompressibleTangent!, neoHookeanCompressibleCauchyStress!,
+    neoHookeanCompressibleSpatialTangent!)

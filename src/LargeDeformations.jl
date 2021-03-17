@@ -19,7 +19,8 @@ export getDeformationGradient, getDeformationGradient!,
     getAlmansiStrain,
     getInvariants, getPrincipalStretches,
     convertMaterialTangent2SpatialTangent!,
-    convertSecondPiola2CauchyStress, convertSecondPiola2CauchyStress!
+    convertSecondPiola2CauchyStress, convertSecondPiola2CauchyStress!,
+    getTraceMandel
 
 #from hyperElasticModels.jl
 export hyperElasticModel, saintVenantCauchyStress, saintVenantTangent!,

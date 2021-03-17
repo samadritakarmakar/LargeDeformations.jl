@@ -317,3 +317,13 @@ function convertSecondPiola2CauchyStress!(S_mandel::Array{T1,1}, F_mandel::Array
     convertSecondPiola2CauchyStress!(σ, S_mandel, F_mandel)
     return σ
 end
+
+
+function getTraceMandel(M_mandel::Array{T,1}) where T
+    trace = zeros(T, 1)[1]
+    for i ∈ 1:3
+        ii = getMandelIndex(i, i)
+        trace += M_mandel(ii)
+    end
+    return trace    
+end

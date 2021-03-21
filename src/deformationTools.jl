@@ -44,10 +44,10 @@ function getJacobianDeformationGradient(F_mandel::Array{T, 1}) where T
     return getJacobianDeformationGradient(F_tensor)
 end
 
-function getRightCauchyDeformation!(E::Array{T, 2}, F_tensor::Array{T, 2}) where T
+function getRightCauchyDeformation!(C::Array{T, 2}, F_tensor::Array{T, 2}) where T
     zero = zeros(T, 1)
-    fill!(E, zero[1])
-    E .= F_tensor'*F_tensor
+    fill!(C, zero[1])
+    C .= F_tensor'*F_tensor
 end
 
 function getRightCauchyDeformation(F_tensor::Array{T, 2}) where T
@@ -325,5 +325,5 @@ function getTraceMandel(M_mandel::Array{T,1}) where T
         ii = getMandelIndex(i, i)
         trace += M_mandel(ii)
     end
-    return trace    
+    return trace
 end

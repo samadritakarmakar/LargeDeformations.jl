@@ -142,11 +142,8 @@ const saintVenantModel  = hyperElasticModel(saintVenantSecondPiolaStress!,
 ################# End of Saint Venant############################################
 
 ################### Compressible Neo-Hookean##########################
-
-function neoHookeanCompressible_Ψ(E_mandel::Array{T,1}, λ_μ::Tuple{Float64, Float64}) where T
+function getRightCauchy4rmGreenStrain(E_mandel::Array{T,1}) where T
     E = E_mandel
-    λ = λ_μ[1]
-    μ = λ_μ[2]
     C = zeros(T, 9)
     for J ∈ 1:3
         for I ∈ 1:3
@@ -154,23 +151,35 @@ function neoHookeanCompressible_Ψ(E_mandel::Array{T,1}, λ_μ::Tuple{Float64, F
             C[IJ] += 2.0*E[IJ] + δ(I,J)
         end
     end
-    C_tensor = convert2DMandelToTensor(C)
+    return C
+end
+
+
+function neoHookeanCompressible_Ψ(C_mandel::Array{T,1}, λ_μ::Tuple{Float64, Float64}) where T
+    λ = λ_μ[1]
+    μ = λ_μ[2]
+    C_tensor = convert2DMandelToTensor(C_mandel)
     Ic = tr(C_tensor)
     J = sqrt(det(C_tensor))
     return μ / 2 * (Ic - 3) - μ * log(J) + λ / 2 * log(J)^2
 end
 
-function neoHookeanCompressibleSecondPiolaStress!(S::Array{T, 1}, E::Array{T,1}, λ_μ::Tuple{Float64, Float64}) where T
-    fill!(S, zeros(T, 1)[1])
-    ψ(e) = neoHookeanCompressible_Ψ(e, λ_μ)
-    ForwardDiff.gradient!(S, ψ, E)
+function neoHookeanCompressibleSecondPiolaStress!(S::Array{T1, 1}, E::Array{T2,1}, λ_μ::Tuple{Float64, Float64}) where {T1, T2}
+    fill!(S, zeros(T1, 1)[1])
+    C = getRightCauchy4rmGreenStrain(E)
+    ψ(c) = neoHookeanCompressible_Ψ(c, λ_μ)
+    ForwardDiff.gradient!(S, ψ, C)
+    S .= 2*S
     return S
 end
 
 function neoHookeanCompressibleTangent!(ℂ::Array{T, 2}, E_mandel::Array{T,1}, λ_μ::Tuple{Float64, Float64}) where T
     fill!(ℂ, zeros(T, 1)[1])
-    ψ(e) = neoHookeanCompressible_Ψ(e, λ_μ)
-    ForwardDiff.hessian!(ℂ, ψ, E_mandel)
+    C = getRightCauchy4rmGreenStrain(E_mandel)
+    ψ(c) = neoHookeanCompressible_Ψ(c, λ_μ)
+    ℂ .= ForwardDiff.hessian(ψ, C)
+
+    ℂ .= 4*ℂ
     return ℂ
 end
 
